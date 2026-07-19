@@ -1,0 +1,223 @@
+# Analytical Data Science Programmer — Coding Assessment
+
+Solutions to the ADS Programmer coding assessment: three required R
+questions (SDTM, ADaM, TLG) built on the Pharmaverse ecosystem, plus one
+bonus Python/GenAI question.
+
+**Author:** Ben Nguyen
+
+---
+
+## Repository structure
+
+```
+.
+├── README.md
+├── question_1_sdtm/          SDTM DS (Disposition) domain via {sdtm.oak}
+│   ├── 01_create_ds_domain.R
+│   ├── study_ct.csv           controlled terminology input
+│   ├── ds.xpt                 output — SAS transport
+│   ├── ds_domain.rds          output — native R
+│   └── log.txt                error-free run evidence
+│
+├── question_2_adam/          ADaM ADSL via {admiral}
+│   ├── create_adsl.R
+│   ├── verify_adsl_subject.R  independent single-subject QC (double programming)
+│   ├── adsl.xpt               output — SAS transport
+│   ├── adsl.rds               output — native R
+│   └── log.txt                error-free run evidence
+│
+├── question_3_tlg/           AE tables & figures via {gtsummary} + {ggplot2}
+│   ├── 01_create_ae_summary_table.R
+│   ├── 02_create_visualizations.R
+│   ├── ae_summary_table.html          full TEAE table (all terms)
+│   ├── ae_summary_table.png           filtered TEAE table (>=5% in any arm)
+│   ├── ae_severity_by_treatment.png   Plot 1 — severity by arm
+│   ├── top10_ae_incidence.png         Plot 2 — top 10 AEs w/ 95% CIs
+│   ├── log_table.txt
+│   └── log_viz.txt
+│
+└── question_4_python/        GenAI clinical data assistant (LLM + pandas)
+    ├── clinical_agent.py      the agent (real LLM + mock backends)
+    ├── test_queries.py        example query runner
+    ├── export_adae.R          helper: exports the AE data to adae.csv
+    ├── adae.csv               input data
+    └── run_output.txt         example run evidence
+```
+
+---
+
+## Environment
+
+**R** (Questions 1–3): R 4.2.0+ (developed on R 4.6.1). Key packages:
+`sdtm.oak`, `admiral`, `pharmaverseraw`, `pharmaversesdtm`,
+`pharmaverseadam`, `dplyr`, `gtsummary`, `gt`, `flextable`, `gdtools`,
+`ggplot2`, `haven`.
+
+```r
+install.packages(c(
+  "sdtm.oak", "admiral", "pharmaverseraw", "pharmaversesdtm",
+  "pharmaverseadam", "dplyr", "stringr", "lubridate", "gtsummary",
+  "gt", "flextable", "gdtools", "ggplot2", "ragg", "haven"
+))
+```
+
+**Python** (Question 4): Python 3.10+. Requires `pandas` and `pydantic`;
+`langchain` / `langchain-openai` are only needed to activate the real-LLM
+backend (the agent runs fully on a mock backend without them).
+
+```bash
+pip install pandas pydantic
+# optional, for the real LLM backend:
+pip install langchain langchain-openai
+```
+
+---
+
+## How to run
+
+All R scripts are run **from the repository root** and are self-contained
+(each loads its own packages and data). The full pipeline has been verified
+to run top-to-bottom in a clean R session.
+
+```r
+# Question 1 — SDTM DS domain
+source("question_1_sdtm/01_create_ds_domain.R")
+
+# Question 2 — ADaM ADSL, then the independent QC check
+source("question_2_adam/create_adsl.R")
+source("question_2_adam/verify_adsl_subject.R")   # prints 14/14 PASS
+
+# Question 3 — AE summary table, then the two figures
+source("question_3_tlg/01_create_ae_summary_table.R")
+source("question_3_tlg/02_create_visualizations.R")
+```
+
+```bash
+# Question 4 — export the data (in R), then run the Python agent
+Rscript question_4_python/export_adae.R      # writes adae.csv
+cd question_4_python
+python test_queries.py
+```
+
+Each R script writes a `log*.txt` capturing its console output and QC
+summaries as evidence of an error-free run.
+
+---
+
+## Question summaries & key decisions
+
+Throughout, where the data or spec was ambiguous, the approach was to make
+the **statistically/clinically correct** choice and **document the reasoning
+in-code**, rather than reverse-engineer the assessment's sample outputs.
+
+### Question 1 — SDTM DS domain (`{sdtm.oak}`)
+
+Builds the Disposition domain from `pharmaverseraw::ds_raw`, producing the
+12 requested variables. Uses the standard `{sdtm.oak}` mapping workflow
+(`assign_no_ct`, `assign_ct`, `assign_datetime`, `derive_seq`,
+`derive_study_day`).
+
+Notable decisions:
+- **Two-source mapping.** DSTERM/DSDECOD are each mapped from two raw
+  fields (the disposition checkbox and the free-text "other, specify"
+  field), since ~1/3 of records are protocol milestones captured only in
+  the latter.
+- **DSCAT by category, not hardcoded.** Records are classified as
+  `DISPOSITION EVENT`, `PROTOCOL MILESTONE` (randomization), or
+  `OTHER EVENT`, per SDTMIG codelist C74558 — rather than a single flat
+  value, which would be wrong for most records.
+- **CT alignment.** Five disposition terms initially failed to map due to
+  case/wording differences between the raw verbatim values and the CT's
+  `collected_value` column (e.g. "Completed" vs "Complete"). These were
+  aligned in an explicit, auditable step so mapping runs through
+  `{sdtm.oak}`'s validated engine rather than a custom matcher.
+- **USUBJID via DM join** (not string-pasting) to guarantee it matches DM,
+  which `derive_study_day()` depends on.
+- The 52 missing DSSTDY values are the screen-failure subjects (no
+  reference start date to count study day from) — expected, and verified
+  in-log.
+
+### Question 2 — ADaM ADSL (`{admiral}`)
+
+Builds ADSL from `pharmaversesdtm::dm` and derives AGEGR9/AGEGR9N,
+TRTSDTM/TRTSTMF, ITTFL, and LSTAVLDT using `{admiral}` functions.
+
+Notable decisions:
+- **Seconds imputation.** `derive_vars_dtm(..., ignore_seconds_flag = TRUE)`
+  implements the spec's rule that a missing-seconds-only time should not
+  set the imputation flag.
+- **Shared valid-dose filter.** The "valid dose" definition
+  (`EXDOSE > 0` or `EXDOSE == 0 & EXTRT contains PLACEBO`) is defined once
+  and reused for TRTSDTM, TRTEDTM, and the LSTAVLDT exposure component.
+- **LSTAVLDT** is the max of four sources (last valid vitals, AE onset,
+  disposition, and last valid-dose exposure) via
+  `derive_vars_extreme_event()`.
+- **Independent QC** (`verify_adsl_subject.R`): recomputes every derived
+  value by hand for two subjects — one placebo (exercising the zero-dose
+  valid-dose branch) and one active-dose — without reusing the `{admiral}`
+  functions. All 14 checks pass. (100% of subjects fall in AGEGR9 ">50"
+  because CDISCPILOT01 is an elderly Alzheimer's population — verified
+  against the data, not a boundary bug.)
+
+### Question 3 — TLG: Adverse Events (`{gtsummary}` + `{ggplot2}`)
+
+TEAE summary table plus two figures, from `pharmaverseadam::adae`
+(filtered `TRTEMFL == "Y"`) and `pharmaverseadam::adsl`.
+
+Notable decisions:
+- **Subject-level, per-arm denominators.** Percentages are the share of
+  arm *subjects* with ≥1 event (not event counts), with each arm's own N.
+  The Screen Failure arm is excluded (never treated → not at risk of a
+  treatment-emergent event).
+- **Two table outputs.** A full HTML table (all terms) plus a
+  frequency-filtered PNG (terms in ≥5% of subjects in *any* arm — a
+  standard TEAE display threshold, applied to display rows only via
+  `filter_hierarchical()` so subtotals/overall rows still reflect the full
+  population). SOC subtotals may therefore exceed the sum of displayed
+  terms — expected, and noted in the table caption.
+- **Rendering path.** Table PNG uses `{flextable}` (pure-R graphics) rather
+  than `gt`/`webshot2`, because headless Chrome cannot launch in the Posit
+  Cloud sandbox. Figures use `ggsave()` with the `{ragg}` device — also
+  browser-free.
+- **Plot 2 denominator = 254 (all treated subjects).** The sample image
+  shows n=225; investigation found that ~217–225 counts reflect a
+  "subjects-with-AEs" population, which would *inflate* incidence rates by
+  excluding at-risk subjects who had no AE. The at-risk population (254) is
+  the correct incidence denominator; the choice is documented in-code.
+- **Exact CIs.** 95% Clopper-Pearson intervals via base R
+  `binom.test(x, n)$conf.int`.
+
+### Question 4 — GenAI Clinical Data Assistant (bonus)
+
+A `ClinicalTrialDataAgent` that turns free-text questions into structured
+pandas queries over the AE data (Prompt → Parse → Execute).
+
+Notable decisions:
+- **Two interchangeable backends behind one interface.** `RealLLMBackend`
+  uses LangChain + OpenAI with
+  `ChatOpenAI(...).with_structured_output(Query, method="json_schema")` to
+  produce a Pydantic-validated `{target_column, filter_value}`.
+  `MockLLMBackend` is a deterministic, dependency-free stand-in returning
+  the same shape via keyword routing. The agent auto-selects the real LLM
+  when `OPENAI_API_KEY` is set, else the mock — so the full pipeline runs
+  for a reviewer *without* a key, while the real integration pattern is
+  fully implemented.
+- **Schema as data.** The routable columns (AESEV/AETERM/AESOC) are
+  described in a dictionary injected into the LLM prompt — intent is mapped
+  to columns by the model, not by hard-coded rules.
+- **Honest limits.** `test_queries.py` runs the three required example
+  queries (which route correctly) *and* three deliberately hard queries
+  (paraphrase, synonym, misspelling) that expose the mock's keyword-
+  matching ceiling — demonstrating exactly the cases the real LLM backend
+  is there to handle.
+
+---
+
+## Notes
+
+- Developed on Posit Cloud (R) and locally via Jupyter (Python).
+- The full R pipeline was verified end-to-end in a clean R session.
+- Package APIs in the Pharmaverse move quickly; `{sdtm.oak}` and
+  `{gtsummary}`'s `tbl_hierarchical()` are relatively new, and function
+  usage here was checked against current documentation.
