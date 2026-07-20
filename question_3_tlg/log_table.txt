@@ -1,0 +1,161 @@
+=====================================================
+Q3 Task 1 - TEAE summary table using {gtsummary}
+Run started: 2026-07-19 01:19:35 
+=====================================================
+
+G3;
+Attaching package: ‘pharmaverseadam’
+
+gG3;The following objects are masked _by_ ‘.GlobalEnv’:
+
+    adae, adsl
+
+gG3;
+Attaching package: ‘flextable’
+
+gG3;The following object is masked from ‘package:gtsummary’:
+
+    continuous_summary
+
+gInput records - adae: 1191  adsl: 306 
+
+TEAE records (TRTEMFL == 'Y'): 1122 of 1191 total AE records
+
+Arms retained for the table: Placebo, Xanomeline High Dose, Xanomeline Low Dose 
+(Screen Failure arm dropped - never treated, not at risk of TEAE)
+
+Per-arm subject denominators (ADSL, used as-is):
+# A tibble: 3 × 2
+  ACTARM               N_subjects
+  <fct>                     <int>
+1 Placebo                      86
+2 Xanomeline High Dose         72
+3 Xanomeline Low Dose          96
+
+----------------- FREQUENCY-FILTER DIAGNOSTIC -----------------
+  Terms with >=  5% subject incidence in any arm: 24
+  Terms with >= 10% subject incidence in any arm: 10
+  (Using threshold = 5% for the PNG output)
+
+When applying filters on specific levels of `by` variable "ACTARM" xx_1 = "1", xx_2
+= "2", and xx_3 = "3".
+Filter verification - all kept terms >= threshold: TRUE | all dropped terms < threshold: TRUE 
+Terms kept: 24 of 230 total
+
+Overall TEAE row in the FILTERED table (must match full-population 65/68/84 - proves summary rows were preserved):
+# A tibble: 1 × 5
+  **Primary System Organ Class**  \n …¹ **Placebo**  \nN = 8…² **Xanomeline High Do…³
+  <chr>                                 <chr>                  <chr>                 
+1 Treatment Emergent AEs                65 (76%)               68 (94%)              
+# ℹ abbreviated names:
+#   ¹​`**Primary System Organ Class**  \n    **Reported Term for the Adverse Event**`,
+#   ²​`**Placebo**  \nN = 86`, ³​`**Xanomeline High Dose**  \nN = 72`
+# ℹ 2 more variables: `**Xanomeline Low Dose**  \nN = 96` <chr>,
+#   `**Overall**  \nN = 254` <chr>
+
+----------------- QC SUMMARY -----------------
+Subjects with >=1 TEAE per arm (independent of gtsummary):
+# A tibble: 3 × 4
+  ACTARM               N_subjects subjects_with_TEAE   pct
+  <fct>                     <int>              <int> <dbl>
+1 Placebo                      86                 65  75.6
+2 Xanomeline High Dose         72                 68  94.4
+3 Xanomeline Low Dose          96                 84  87.5
+
+Distinct SOCs: 23  | Distinct reported terms: 230 
+
+Written: ae_summary_table.html (full, unfiltered table)
+Written: ae_summary_table.png (filtered table)
+
+----------------- filtered table (PNG contents) -----------------
+# A tibble: 32 × 5
+   **Primary System Organ Class**  \n…¹ **Placebo**  \nN = 8…² **Xanomeline High Do…³
+   <chr>                                <chr>                  <chr>                 
+ 1 Treatment Emergent AEs               65 (76%)               68 (94%)              
+ 2 GENERAL DISORDERS AND ADMINISTRATIO… 21 (24%)               36 (50%)              
+ 3 APPLICATION SITE PRURITUS            6 (7.0%)               21 (29%)              
+ 4 APPLICATION SITE ERYTHEMA            3 (3.5%)               14 (19%)              
+ 5 APPLICATION SITE DERMATITIS          5 (5.8%)               7 (9.7%)              
+ 6 APPLICATION SITE IRRITATION          3 (3.5%)               9 (13%)               
+ 7 APPLICATION SITE VESICLES            1 (1.2%)               5 (6.9%)              
+ 8 FATIGUE                              1 (1.2%)               5 (6.9%)              
+ 9 SKIN AND SUBCUTANEOUS TISSUE DISORD… 20 (23%)               39 (54%)              
+10 PRURITUS                             8 (9.3%)               25 (35%)              
+11 ERYTHEMA                             8 (9.3%)               14 (19%)              
+12 RASH                                 5 (5.8%)               8 (11%)               
+13 HYPERHIDROSIS                        2 (2.3%)               8 (11%)               
+14 SKIN IRRITATION                      3 (3.5%)               5 (6.9%)              
+15 BLISTER                              0 (0%)                 1 (1.4%)              
+16 NERVOUS SYSTEM DISORDERS             8 (9.3%)               23 (32%)              
+17 DIZZINESS                            2 (2.3%)               10 (14%)              
+18 HEADACHE                             3 (3.5%)               5 (6.9%)              
+19 SYNCOPE                              0 (0%)                 2 (2.8%)              
+20 GASTROINTESTINAL DISORDERS           17 (20%)               19 (26%)              
+21 DIARRHOEA                            9 (10%)                3 (4.2%)              
+22 VOMITING                             3 (3.5%)               6 (8.3%)              
+23 NAUSEA                               3 (3.5%)               6 (8.3%)              
+24 SALIVARY HYPERSECRETION              0 (0%)                 4 (5.6%)              
+25 CARDIAC DISORDERS                    12 (14%)               14 (19%)              
+26 SINUS BRADYCARDIA                    2 (2.3%)               8 (11%)               
+27 MYOCARDIAL INFARCTION                4 (4.7%)               4 (5.6%)              
+28 INFECTIONS AND INFESTATIONS          16 (19%)               13 (18%)              
+29 NASOPHARYNGITIS                      2 (2.3%)               6 (8.3%)              
+30 UPPER RESPIRATORY TRACT INFECTION    6 (7.0%)               3 (4.2%)              
+31 RESPIRATORY, THORACIC AND MEDIASTIN… 8 (9.3%)               10 (14%)              
+32 COUGH                                1 (1.2%)               5 (6.9%)              
+# ℹ abbreviated names:
+#   ¹​`**Primary System Organ Class**  \n    **Reported Term for the Adverse Event**`,
+#   ²​`**Placebo**  \nN = 86`, ³​`**Xanomeline High Dose**  \nN = 72`
+# ℹ 2 more variables: `**Xanomeline Low Dose**  \nN = 96` <chr>,
+#   `**Overall**  \nN = 254` <chr>
+
+----------------- sessionInfo -----------------
+R version 4.6.1 (2026-06-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 24.04.4 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+ [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+[10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+time zone: UTC
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] flextable_0.10.0      gt_1.3.0              pharmaverseadam_1.3.0
+[4] gtsummary_2.5.1       admiral_1.5.0         pharmaversesdtm_1.5.0
+[7] dplyr_1.2.1          
+
+loaded via a namespace (and not attached):
+ [1] sass_0.4.10             utf8_1.2.6              generics_0.1.4         
+ [4] tidyr_1.3.2             fontLiberation_0.1.0    xml2_1.6.0             
+ [7] stringi_1.8.7           hms_1.1.4               digest_0.6.39          
+[10] magrittr_2.0.5          evaluate_1.0.5          grid_4.6.1             
+[13] timechange_0.4.0        RColorBrewer_1.1-3      cards_0.8.1            
+[16] fastmap_1.2.0           zip_3.0.1               admiraldev_1.5.0       
+[19] purrr_1.2.2             scales_1.4.0            fontBitstreamVera_0.1.1
+[22] textshaping_1.0.5       cli_3.6.6               rlang_1.3.0            
+[25] fontquiver_0.2.1        litedown_0.10           commonmark_2.0.0       
+[28] withr_3.0.3             otel_0.2.0              gdtools_0.5.1          
+[31] officer_0.7.6           tools_4.6.1             uuid_1.2-2             
+[34] ggplot2_4.0.3           curl_7.1.0              vctrs_0.7.3            
+[37] R6_2.6.1                lifecycle_1.0.5         lubridate_1.9.5        
+[40] stringr_1.6.0           fs_2.1.0                ragg_1.5.2             
+[43] pkgconfig_2.0.3         pillar_1.11.1           gtable_0.3.6           
+[46] data.table_1.18.4       glue_1.8.1              Rcpp_1.1.2             
+[49] systemfonts_1.3.2       xfun_0.60               tibble_3.3.1           
+[52] tidyselect_1.2.1        knitr_1.51              farver_2.1.2           
+[55] htmltools_0.5.9         rmarkdown_2.31          compiler_4.6.1         
+[58] S7_0.2.2                roxygen2_8.0.0          markdown_2.0           
+[61] askpass_1.2.1           openssl_2.4.2          
+
+Run finished: 2026-07-19 01:19:51 
