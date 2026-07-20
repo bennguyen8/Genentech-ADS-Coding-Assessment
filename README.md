@@ -40,7 +40,7 @@ bonus Python/GenAI question.
 └── question_4_python/        GenAI clinical data assistant (LLM + pandas)
     ├── clinical_agent.py      the agent (real LLM + mock backends)
     ├── test_queries.py        example query runner
-    ├── clinical_agent_demo.ipynb   Jupyter notebook — runnable demo w/ inline output
+    ├── question_4_demo.ipynb   Jupyter notebook — runnable demo w/ inline output
     ├── export_adae.R          helper: exports the AE data to adae.csv
     ├── adae.csv               input data
     └── run_output.txt         example run evidence
