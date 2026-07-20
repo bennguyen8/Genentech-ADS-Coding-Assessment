@@ -1,0 +1,58 @@
+======================================================================
+ClinicalTrialDataAgent - example query run
+Rows in dataset: 1,191
+Backend in use : MockLLMBackend (no OPENAI_API_KEY)
+======================================================================
+
+----------------------------------------------------------------------
+STANDARD QUERIES (one per routing target: AESEV / AETERM / AESOC)
+----------------------------------------------------------------------
+
+[1] Give me the subjects who had Adverse events of Moderate severity
+  routed to : AESEV == 'MODERATE'
+  matched   : 378 AE rows
+  subjects  : 136 unique
+  IDs       : ['01-701-1023', '01-701-1047', '01-701-1097', '01-701-1111', '01-701-1115', '01-701-1133', '01-701-1146', '01-701-1148', '01-701-1180', '01-701-1181']  (+126 more)
+
+[2] Which subjects experienced diarrhoea?
+  routed to : AETERM == 'DIARRHOEA'
+  matched   : 21 AE rows
+  subjects  : 18 unique
+  IDs       : ['01-701-1015', '01-701-1387', '01-701-1415', '01-703-1042', '01-703-1403', '01-704-1010', '01-704-1065', '01-706-1041', '01-708-1272', '01-709-1007']  (+8 more)
+
+[3] Show me subjects with cardiac disorders
+  routed to : AESOC == 'CARDIAC DISORDERS'
+  matched   : 91 AE rows
+  subjects  : 44 unique
+  IDs       : ['01-701-1023', '01-701-1047', '01-703-1175', '01-703-1299', '01-703-1335', '01-704-1008', '01-704-1017', '01-704-1025', '01-704-1065', '01-704-1266']  (+34 more)
+
+----------------------------------------------------------------------
+HARD QUERIES (probe the mock's ceiling - real LLM would handle these)
+----------------------------------------------------------------------
+
+[1] Which patients had heart problems?
+  routed to : AETERM == 'WHICH PATIENTS HAD HEART PROBLEMS?'
+  matched   : 0 AE rows
+  subjects  : 0 unique
+  IDs       : []
+  NOTE      : 0 subjects - the mock mis-routed this paraphrase/typo. A real LLM would resolve the intent (see the comment on this query). This is the mock's expected ceiling, not a pipeline bug.
+
+[2] How bad were the reactions in the treatment groups?
+  routed to : AETERM == 'HOW BAD WERE THE REACTIONS IN THE TREATMENT GROUPS?'
+  matched   : 0 AE rows
+  subjects  : 0 unique
+  IDs       : []
+  NOTE      : 0 subjects - the mock mis-routed this paraphrase/typo. A real LLM would resolve the intent (see the comment on this query). This is the mock's expected ceiling, not a pipeline bug.
+
+[3] List anyone who reported a headake
+  routed to : AETERM == 'LIST ANYONE WHO REPORTED A HEADAKE'
+  matched   : 0 AE rows
+  subjects  : 0 unique
+  IDs       : []
+  NOTE      : 0 subjects - the mock mis-routed this paraphrase/typo. A real LLM would resolve the intent (see the comment on this query). This is the mock's expected ceiling, not a pipeline bug.
+
+======================================================================
+Done. Standard queries route correctly under the mock; the hard
+queries show where keyword matching breaks and the real LLM
+(RealLLMBackend) would take over with an OPENAI_API_KEY set.
+======================================================================
